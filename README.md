@@ -1,4 +1,4 @@
-# Poker Planning
+# Planning Poker
 
 ## Getting Started
 Copy `src/credentials.ts.example` -> `src/credentials.ts` and replace the values.

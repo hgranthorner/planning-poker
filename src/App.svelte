@@ -10,6 +10,7 @@
 
     const supabase = createClient(env.apiUrl, env.anon)
     let playerName = ''
+    let playerVote
     let players: Player[] = []
     setInterval(() => {
         supabase.from('players')
@@ -20,6 +21,7 @@
                     ...d,
                     lastSeen: new Date(d.last_seen)
                 }))
+                players.sort((p1, p2) => p1.name > p2.name ? 1 : -1)
                 return players
             })
             .then(players => {
@@ -30,15 +32,41 @@
                 }
             })
     }, 1000)
+    $: if (playerVote) {
+        debugger
+        console.log('playerVote', playerVote)
+        supabase.from('players')
+            .update({vote: playerVote})
+            .match({name: playerName})
+            .then(() => console.log('Updated vote!'))
+    }
 </script>
-<style></style>
+<style>
+    .current {
+        color: dodgerblue;
+    }
+
+    .players > li {
+        cursor: pointer;
+    }
+</style>
 <main>
     <input bind:value={playerName}>
     <button on:click={() => supabase.from('players').insert({name: playerName}).then(x => console.log(x))}>Enter
     </button>
-    <ul>
+    <ul class="players">
         {#each players as player}
-            <li>{player.name}</li>
+            <li on:click={() => {
+             playerName = player.name
+             playerVote = player.vote
+            }}
+                class="{playerName === player.name ? 'current' : ''}">{player.name}
+                {#if player.vote}: {player.vote}{/if}
+            </li>
         {/each}
     </ul>
+    <div>
+        <label for="vote-input">Your vote: </label>
+        <input id="vote-input" type="number" bind:value={playerVote}>
+    </div>
 </main>
